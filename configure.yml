@@ -1,0 +1,82 @@
+---
+- hosts: all
+  become: yes
+  become_method: su
+  gather_facts: no
+  # hackery to cater for different python on host where ansible is running versus target (inventory) host
+  vars:
+    - ansible_play_python: "{{ '/usr/bin/env python3' }}"
+  
+  tasks:
+    - name: Wait for SSH access
+      ansible.builtin.wait_for:
+        host: '{{ (ansible_ssh_host|default(ansible_host))|default(inventory_hostname) }}'
+        search_regex: OpenSSH
+        port: 22
+      vars:
+        ansible_connection: local
+        ansible_python_interpreter: "{{ ansible_play_python }}"
+      become: no
+  
+    - name: Gather facts
+      setup:
+  
+    - name: Ensure packages installed
+      ansible.builtin.package:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - sudo
+        - vim
+        - zsh
+  
+    - name: Set shell for default user
+      user:
+        name: ansible
+        shell: '/usr/local/bin/zsh'
+
+    - name: Some useful shell aliases
+      copy:
+        src: files/aliases.zsh
+        dest: /usr/local/etc/zshrc
+        owner: root
+        group: wheel
+        mode: 0644
+  
+    - name: Configure sudo
+      copy:
+        dest: '/usr/local/etc/sudoers.d/wheel'
+        content: '%wheel ALL=(ALL) NOPASSWD: ALL'
+        owner: root
+        group: wheel
+        mode: 0600
+
+    - name: Ensure Docker is installed
+      ansible.builtin.package:
+        name: docker.io
+        state: present
+
+    - name: Start Docker service
+      ansible.builtin.service:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Run test nginx container
+      community.docker.docker_container:
+        name: test-nginx
+        image: nginx:alpine
+        state: started
+        ports:
+          - "8080:80"
+
+    - name: Wait for nginx to be up
+      ansible.builtin.uri:
+        url: http://localhost:8080
+        status_code: 200
+        return_content: yes
+      register: nginx_test
+
+    - name: Print nginx homepage content
+      ansible.builtin.debug:
+        var: nginx_test.content

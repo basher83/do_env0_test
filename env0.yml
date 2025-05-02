@@ -1,0 +1,14 @@
+version: 1
+
+deploy:
+  steps:
+    terraformPlan:
+      before:
+    terraformApply:
+      after:
+        - pip3 install --user ansible
+    terraformOutput:
+      after:
+        - echo "$STAGING_PPRIVATE_KEY" > ansible_key && chmod 600 ansible_key
+        - terraform output -raw droplet_ip > inventory
+        - ansible-playbook -i inventory --private-key ansible_key --ssh-common-args='-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null' configure.yml

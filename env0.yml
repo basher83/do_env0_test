@@ -3,7 +3,7 @@ version: 1
 deploy:
   steps:
     terraformPlan:
-      before:
+      before: []
     terraformApply:
       after:
         - pip3 install --user ansible

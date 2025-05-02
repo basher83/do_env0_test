@@ -15,7 +15,7 @@ This repository demonstrates deploying a DigitalOcean droplet using Terraform, c
 ## Setup
 1. **Configure env0 Variables:**
    - `do_token`: Your DigitalOcean API token (Sensitive)
-   - `ansible_public_key`: The public SSH key to be injected into the droplet (Sensitive)
+   - `STAGING_PUBLIC_KEY`: The public SSH key to be injected into the droplet (Sensitive)
    - `STAGING_PRIVATE_KEY`: The private SSH key for Ansible to connect (Sensitive)
 
 2. **Deploy:**

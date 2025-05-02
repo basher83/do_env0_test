@@ -19,7 +19,7 @@ resource "digitalocean_droplet" "drop_test" {
   backups            = false
   monitoring         = false
   user_data = templatefile("digitalocean.tftpl", {
-    public_key = var.ansible_public_key
+    public_key = var.STAGING_PUBLIC_KEY
   })
 }
 
@@ -60,7 +60,7 @@ variable "droplet_size" {
   default     = "s-1vcpu-1gb"
 }
 
-variable "ansible_public_key" {
+variable "STAGING_PUBLIC_KEY" {
   description = "Public SSH key for Ansible user, provided via env0 variable."
   type        = string
   sensitive   = true

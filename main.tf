@@ -18,6 +18,9 @@ resource "digitalocean_droplet" "drop_test" {
   size               = var.droplet_size
   backups            = false
   monitoring         = false
+    ssh_keys = [
+    var.ssh_fingerprint
+  ]
   user_data = templatefile("digitalocean.tftpl", {
     public_key = var.STAGING_PUBLIC_KEY
   })
